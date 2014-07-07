@@ -24,3 +24,10 @@ proguard/
 
 # Log Files
 *.log
+
+.project
+.classpath
+
+*.iml
+*.ipr
+*.iws
