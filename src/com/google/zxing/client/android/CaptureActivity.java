@@ -23,8 +23,10 @@ import com.google.zxing.client.android.camera.CameraManager;
 import com.google.zxing.client.android.history.HistoryItem;
 import com.google.zxing.client.android.history.HistoryManager;
 
+import com.ofix.barcode.ProductData;
 import com.ofix.barcode.ResultActivity;
 import com.ofix.barcode.R;
+import com.ofix.barcode.RetrieveProductTask;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -46,9 +48,23 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
+
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 /**
  * This activity opens the camera and does the actual scanning on a background thread. It draws a
@@ -352,10 +368,9 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
    */
   public void handleDecode(Result rawResult, Bitmap barcode, float scaleFactor) {
     inactivityTimer.onActivity();
-	Intent intent = new Intent(this, ResultActivity.class);				
-	intent.putExtra(BARCODE_ID, rawResult.getText());
-    startActivity(intent);
-
+    String barcodeId = rawResult.getText();
+    Log.i("ofix","barcode id "+barcodeId);
+    new RetrieveProductTask(this).execute(rawResult.getText());
   }
 
   private void initCamera(SurfaceHolder surfaceHolder) {
@@ -410,5 +425,12 @@ public final class CaptureActivity extends Activity implements SurfaceHolder.Cal
 
   public void drawViewfinder() {
     viewfinderView.drawViewfinder();
+  }
+  
+  public void productFound(ProductData product){    
+	Intent intent = new Intent(this, ResultActivity.class);	
+	//intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+	intent.putExtra(CaptureActivity.BARCODE_ID, String.valueOf(product.id));
+    startActivity(intent);
   }
 }
